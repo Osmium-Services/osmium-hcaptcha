@@ -1,0 +1,58 @@
+{
+    "id": "hcaptcha",
+    "name": "hCaptcha",
+    "version": "1.0.0",
+    "description": "Spam protection for forms via hCaptcha - a privacy-focused alternative to Google reCAPTCHA and Cloudflare Turnstile, admin-editable site/secret key",
+    "category": "security-privacy",
+    "author": {
+        "name": "Gavin Cox"
+    },
+    "license": "proprietary",
+
+    "requires": {
+        "osmium": ">=1.0.0",
+        "php": ">=8.1",
+        "services": []
+    },
+
+    "autoload": [
+        "models"
+    ],
+
+    "admin": {
+        "menu": {
+            "section": "Content",
+            "items": [
+                {
+                    "id": "hcaptcha",
+                    "label": "hCaptcha",
+                    "icon": "bx bx-shield-quarter",
+                    "route": "admin/settings/hcaptcha",
+                    "activePattern": "admin/settings/hcaptcha",
+                    "role": null
+                }
+            ]
+        },
+        "routes": {
+            "admin/settings/hcaptcha": {
+                "controller": "controllers/HcaptchaController.php",
+                "class": "Osmium\\Services\\Hcaptcha\\Controllers\\HcaptchaController",
+                "method": "index",
+                "title": "hCaptcha"
+            }
+        }
+    },
+
+    "frontend": {
+        "themeBlocks": [
+            {
+                "hook": "head",
+                "file": "theme/hcaptcha-headscript.phtml"
+            }
+        ]
+    },
+
+    "setup": {
+        "postInstallNote": "Disabled by default. A theme must call ServiceThemeBlocks::render('head', ['hcaptcha' => ..., 'site' => $site]) in its <head> template to load the widget script. A form wanting protection renders <div class=\"h-captcha\" data-sitekey=\"...\"></div> inside the form (site key available via HcaptchaConfig::get()->siteKey) and its handler calls HcaptchaConfig::verify($_POST['h-captcha-response'] ?? '') before processing. Same verify() contract as Turnstile and reCAPTCHA. hCaptcha refuses localhost as a hostname, so test on a hosts-file name."
+    }
+}

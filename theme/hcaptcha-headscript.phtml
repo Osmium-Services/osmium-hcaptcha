@@ -1,0 +1,9 @@
+<?php // Included via ServiceThemeBlocks::render('head', [...]) by a real theme's own
+// <head> template. Expects $hcaptcha (this service's own config) and $site.
+// Loads the hCaptcha API script (which auto-renders any .h-captcha div on the
+// page) - nothing more. A form wanting protection renders its own
+// <div class="h-captcha" data-sitekey="..."></div> and its handler calls
+// HcaptchaConfig::verify(). ?>
+<?php if ($hcaptcha['enabled'] ?? false): ?>
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<?php endif; ?>
