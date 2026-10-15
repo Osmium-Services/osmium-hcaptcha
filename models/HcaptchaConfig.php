@@ -53,23 +53,45 @@ class HcaptchaConfig
     }
 
     /**
-     * Verify a submitted token (the "h-captcha-response" POST field) against
-     * hCaptcha's siteverify endpoint. The site key is sent so a token issued
-     * for another site key can't be redeemed here, and the visitor's IP when
-     * there is one. Tokens are single-use.
+     * Verify a submitted token (the "h-captcha-response" POST field) against hCaptcha's siteverify endpoint.
      */
     public static function verify(string $token): bool
     {
+        return self::check($token) === HcaptchaOutcome::PASSED;
+    }
+
+    /**
+     * Ask hCaptcha about a token and say what came of it (a HcaptchaOutcome constant). hCaptcha's own error codes (a
+     * wrong secret key, a site key that does not match) go to the error log.
+     */
+    public static function check(string $token): string
+    {
         $config = self::get();
 
-        $notConfigured = $token === '' || empty($config->secretKey ?? '');
-        if ($notConfigured) return false;
+        $noSecret = empty($config->secretKey ?? '');
+        if ($noSecret) return HcaptchaOutcome::classify(token: $token, response: null);
 
+        $noToken = $token === '';
+        if ($noToken) return HcaptchaOutcome::MISSING;
+
+        $response = self::askHcaptcha(config: $config, token: $token);
+
+        $outcome = HcaptchaOutcome::classify(token: $token, response: $response);
+        $bad = $outcome !== HcaptchaOutcome::PASSED;
+        if ($bad) \error_log('hCaptcha check ' . $outcome . ': ' . \json_encode($response['error-codes'] ?? 'no answer from hCaptcha'));
+
+        return $outcome;
+    }
+
+    /** @return ?array<string, mixed> hCaptcha's decoded answer, or null when it could not be asked */
+    private static function askHcaptcha(object $config, string $token): ?array
+    {
         $fields = [
             'secret' => $config->secretKey,
             'response' => $token,
         ];
 
+        // The site key stops a token issued for another site key being redeemed here
         $hasSiteKey = !empty($config->siteKey ?? '');
         if ($hasSiteKey) $fields['sitekey'] = $config->siteKey;
 
@@ -85,13 +107,14 @@ class HcaptchaConfig
             CURLOPT_TIMEOUT => 10,
         ]);
 
-        $response = \curl_exec($ch);
+        $body = \curl_exec($ch);
         $curlError = \curl_error($ch);
-        if ($curlError) return false;
+        \curl_close($ch);
+        if ($curlError || !\is_string($body)) return null;
 
-        $decoded = \json_decode((string) $response, associative: true);
+        $decoded = \json_decode($body, associative: true);
 
-        return (bool) ($decoded['success'] ?? false);
+        return \is_array($decoded) ? $decoded : null;
     }
 
     private static function defaults(): object

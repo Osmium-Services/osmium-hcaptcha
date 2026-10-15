@@ -1,7 +1,7 @@
 {
     "id": "hcaptcha",
     "name": "hCaptcha",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Spam protection for forms via hCaptcha - a privacy-focused alternative to Google reCAPTCHA and Cloudflare Turnstile, admin-editable site/secret key",
     "category": "security-privacy",
     "author": {
@@ -18,6 +18,22 @@
     "autoload": [
         "models"
     ],
+
+    "csp": {
+        "script-src": ["https://js.hcaptcha.com", "https://*.hcaptcha.com", "https://hcaptcha.com"],
+        "frame-src": ["https://*.hcaptcha.com", "https://hcaptcha.com"],
+        "style-src": ["https://*.hcaptcha.com", "https://hcaptcha.com"],
+        "connect-src": ["https://*.hcaptcha.com", "https://hcaptcha.com"]
+    },
+
+    "hooks": {
+        "form.verify": [
+            "Osmium\\Services\\Hcaptcha\\Models\\HcaptchaHooks::verify"
+        ],
+        "form.widget": [
+            "Osmium\\Services\\Hcaptcha\\Models\\HcaptchaHooks::widget"
+        ]
+    },
 
     "admin": {
         "menu": {
@@ -53,6 +69,6 @@
     },
 
     "setup": {
-        "postInstallNote": "Disabled by default. A theme must call ServiceThemeBlocks::render('head', ['hcaptcha' => ..., 'site' => $site]) in its <head> template to load the widget script. A form wanting protection renders <div class=\"h-captcha\" data-sitekey=\"...\"></div> inside the form (site key available via HcaptchaConfig::get()->siteKey) and its handler calls HcaptchaConfig::verify($_POST['h-captcha-response'] ?? '') before processing. Same verify() contract as Turnstile and reCAPTCHA. hCaptcha refuses localhost as a hostname, so test on a hosts-file name."
+        "postInstallNote": "Disabled by default. Once enabled with the keys from hCaptcha, every form that fires the form.verify and form.widget hooks (such as the product review form) is protected, with no per-form setup, and the visitor ticks the box before the Submit button works. A theme must echo $template['serviceHeadHtml'] in its <head> so the widget script loads. Other forms can call HcaptchaConfig::verify($_POST['h-captcha-response'] ?? '') directly. Same verify() contract as Turnstile and reCAPTCHA. Install only one protection per form: with several enabled, each shows its widget and all must pass. hCaptcha refuses localhost as a hostname, so test on a hosts-file name."
     }
 }
