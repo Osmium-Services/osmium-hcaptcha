@@ -109,7 +109,6 @@ class HcaptchaConfig
 
         $body = \curl_exec($ch);
         $curlError = \curl_error($ch);
-        \curl_close($ch);
         if ($curlError || !\is_string($body)) return null;
 
         $decoded = \json_decode($body, associative: true);
