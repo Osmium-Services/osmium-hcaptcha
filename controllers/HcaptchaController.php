@@ -55,6 +55,12 @@ class HcaptchaController extends AdminController
         $postedSecretKey = \trim($_POST['secret_key'] ?? '');
         $secretKey = $postedSecretKey === '' ? (string) (HcaptchaConfig::get()->secretKey ?? '') : $postedSecretKey;
 
+        $enabledWithoutSecret = $enabled && $secretKey === '';
+        if ($enabledWithoutSecret) {
+            $_SESSION['hcaptcha_settings_error'] = 'Enter the secret key before switching hCaptcha on, otherwise forms would not be protected.';
+            $this->redirect('settings/hcaptcha/');
+        }
+
         $this->saveConfig($enabled, $siteKey, $secretKey);
 
         $this->admin->model->changelog->log(
