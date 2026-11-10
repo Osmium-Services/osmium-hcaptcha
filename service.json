@@ -1,7 +1,7 @@
 {
     "id": "hcaptcha",
     "name": "hCaptcha",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "description": "Spam protection for forms via hCaptcha - a privacy-focused alternative to Google reCAPTCHA and Cloudflare Turnstile, admin-editable site/secret key",
     "category": "security-privacy",
     "website": "https://www.hcaptcha.com",
