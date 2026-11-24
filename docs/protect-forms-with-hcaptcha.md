@@ -1,6 +1,7 @@
 ---
 title: Protect your forms with hCaptcha
 tags: hcaptcha, captcha, spam, bots, forms, privacy, site key, secret key
+page: admin/settings/hcaptcha
 ---
 
 **hCaptcha** is a privacy-focused way to stop spam bots using your forms.
